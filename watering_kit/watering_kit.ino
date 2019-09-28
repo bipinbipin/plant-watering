@@ -143,12 +143,15 @@ void setup()
  delay(2000);
   Wire.begin();
   RTC.begin();
+
+//  set clock on board
+//  RTC.adjust(DateTime(__DATE__, __TIME__));
   Serial.begin(9600);
   // declare relay as output
   pinMode(relay1, OUTPUT);
   pinMode(relay2, OUTPUT);
-  pinMode(relay3, OUTPUT);
-  pinMode(relay4, OUTPUT);
+//  pinMode(relay3, OUTPUT);
+//  pinMode(relay4, OUTPUT);
   // declare pump as output
   pinMode(pump, OUTPUT);
   // declare switch as input
@@ -160,29 +163,37 @@ void setup()
 void loop()
 {
   // read the value from the moisture sensors:
-  read_value();
-  water_flower();
+//  read_value();
+//  water_flower();
+  water_flower_weekly();
+  
   int button_state = digitalRead(button);
-  if (button_state == 1)
-  {
+  if (button_state == 0) {
     read_value();
     u8g.firstPage();
-    do
-    {
+    do {
       drawTH();
       drawflower();
-     
     } while ( u8g.nextPage() );
-  }
-  else
-  {
+  } else {
     u8g.firstPage();
-    do
-    {
+    do {
       drawtime();
       u8g.drawStr(8, 55 , "www.elecrow.com");
     } while (u8g.nextPage());
   }
+}
+
+void water_flower_weekly() {
+  DateTime now = RTC.now();
+  // once a week, sat 3pm
+  if( (now.dayOfTheWeek() == 6) && (now.hour() == 15) && (now.minute() == 9) && (now.second() == 0)) {
+    water_flower();
+  }
+//  Serial.println(now.dayOfTheWeek());
+//  Serial.println(now.hour());
+//  Serial.println(now.minute());
+//  Serial.println(now.second());
 }
 
 //Set moisture value
@@ -209,119 +220,40 @@ void read_value()
   if(moisture2_value<0) {
     moisture2_value=0;
   }
-  float value3 = analogRead(A2);
-  moisture3_value =map(value3,600,360,0,100); delay(20);
-  if(moisture3_value<0){
-    moisture3_value=0;
-  }
-  float value4 = analogRead(A3);
-  moisture4_value =map(value4,600,360,0,100); delay(20);
-  if(moisture4_value<0) {
-    moisture4_value=0;
-  }
 }
 
-void water_flower()
-{
-  if (moisture1_value < 30)
-  {
+void water_flower() {
+
+  // # 1
     digitalWrite(relay1, HIGH);
     relay1_state_flag = 1;
     delay(50);
-    if (pump_state_flag == 0)
-    {
+
       digitalWrite(pump, HIGH);
       pump_state_flag = 1;
-      delay(50);
-    }
-  }
-  else if (moisture1_value > 55)
-  {
+      delay(40000); // run for 40 seconds
+      pump_state_flag = 0;
+      digitalWrite(pump, LOW);
+      
     digitalWrite(relay1, LOW);
     relay1_state_flag = 0;
-    delay(50);
-    if ((relay1_state_flag == 0) && (relay2_state_flag == 0) && (relay3_state_flag == 0) && (relay4_state_flag == 0))
-    {
-      digitalWrite(pump, LOW);
-      pump_state_flag = 0;
-      delay(50);
-    }
-  }
+    delay(1000);
 
-  if (moisture2_value < 30)
-  {
+
+  // # 2
     digitalWrite(relay2, HIGH);
     relay2_state_flag = 1;
     delay(50);
-    if (pump_state_flag == 0)
-    {
+
       digitalWrite(pump, HIGH);
       pump_state_flag = 1;
-      delay(50);
-    }
-  }
-  else if (moisture2_value > 55)
-  {
+      delay(5000); // run for 5 seconds
+      pump_state_flag = 0;
+      digitalWrite(pump, LOW);
+      
     digitalWrite(relay2, LOW);
     relay2_state_flag = 0;
-    delay(50);
-    if ((relay1_state_flag == 0) && (relay2_state_flag == 0) && (relay3_state_flag == 0) && (relay4_state_flag == 0))
-    {
-      digitalWrite(pump, LOW);
-      pump_state_flag = 0;
-      delay(50);
-    }
-  }
 
-  if (moisture3_value < 30)
-  {
-    digitalWrite(relay3, HIGH);
-    relay3_state_flag = 1;
-    delay(50);
-    if (pump_state_flag == 0)
-    {
-      digitalWrite(pump, HIGH);
-      pump_state_flag = 1;
-      delay(50);
-    }
-  }
-  else if (moisture3_value > 55)
-  {
-    digitalWrite(relay3, LOW);
-    relay3_state_flag = 0;
-    delay(50);
-    if ((relay1_state_flag == 0) && (relay2_state_flag == 0) && (relay3_state_flag == 0) && (relay4_state_flag == 0))
-    {
-      digitalWrite(pump, LOW);
-      pump_state_flag = 0;
-      delay(50);
-    }
-  }
-
-  if (moisture4_value < 30)
-  {
-    digitalWrite(relay4, HIGH);
-    relay4_state_flag = 1;
-    delay(50);
-    if (pump_state_flag == 0)
-    {
-      digitalWrite(pump, HIGH);
-      pump_state_flag = 1;
-      delay(50);
-    }
-  }
-  else if (moisture4_value > 55)
-  {
-    digitalWrite(relay4, LOW);
-    relay4_state_flag = 0;
-    delay(50);
-    if ((relay1_state_flag == 0) && (relay2_state_flag == 0) && (relay3_state_flag == 0) && (relay4_state_flag == 0))
-    {
-      digitalWrite(pump, LOW);
-      pump_state_flag = 0;
-      delay(50);
-    }
-  }
 
 }
 
