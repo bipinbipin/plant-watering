@@ -1,3 +1,5 @@
+#include <RTClib.h>
+
 #include <Wire.h>
 #include "U8glib.h"
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE);    // I2C
@@ -143,14 +145,16 @@ void setup()
  delay(2000);
   Wire.begin();
   RTC.begin();
-
+// Uncomment RTC.adjust line to set current date and time and upload.
+// Then comment out same line and upload second time.  If not commented, you will see display as
+// <RTC is not running>
 //  set clock on board
 //  RTC.adjust(DateTime(__DATE__, __TIME__));
   Serial.begin(9600);
   // declare relay as output
   pinMode(relay1, OUTPUT);
   pinMode(relay2, OUTPUT);
-//  pinMode(relay3, OUTPUT);
+  pinMode(relay3, OUTPUT);
 //  pinMode(relay4, OUTPUT);
   // declare pump as output
   pinMode(pump, OUTPUT);
@@ -186,10 +190,10 @@ void loop()
 
 void water_flower_weekly() {
   DateTime now = RTC.now();
-  // once a week, sat 3pm
-  if( (now.dayOfTheWeek() == 6) && (now.hour() == 15) && (now.minute() == 9) && (now.second() == 0)) {
+  // once a week, sunday 16:45
+  if( (now.dayOfTheWeek() == 0) && (now.hour() == 16) && (now.minute() == 45) && (now.second() == 0)) {
     water_flower();
-  }
+    }
 //  Serial.println(now.dayOfTheWeek());
 //  Serial.println(now.hour());
 //  Serial.println(now.minute());
@@ -231,7 +235,8 @@ void water_flower() {
 
       digitalWrite(pump, HIGH);
       pump_state_flag = 1;
-      delay(40000); // run for 40 seconds
+//      delay(40000); // run for 40 seconds
+        delay(50000); // run for 50 seconds
       pump_state_flag = 0;
       digitalWrite(pump, LOW);
       
@@ -247,7 +252,8 @@ void water_flower() {
 
       digitalWrite(pump, HIGH);
       pump_state_flag = 1;
-      delay(5000); // run for 5 seconds
+ //     delay(5000); // run for 5 seconds
+        delay(20000); // run for 20 seconds
       pump_state_flag = 0;
       digitalWrite(pump, LOW);
       
@@ -255,10 +261,24 @@ void water_flower() {
     relay2_state_flag = 0;
 
 
+
+
+  // # 3
+    digitalWrite(relay3, HIGH);
+    relay3_state_flag = 1;
+    delay(50);
+
+      digitalWrite(pump, HIGH);
+      pump_state_flag = 1;
+      delay(5000); // run for 5 seconds
+      pump_state_flag = 0;
+      digitalWrite(pump, LOW);
+      
+    digitalWrite(relay3, LOW);
+    relay2_state_flag = 0;
+
+
 }
-
-
-
   void draw_elecrow(void){
 
   u8g.setFont(u8g_font_gdr9r);
